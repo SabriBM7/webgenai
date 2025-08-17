@@ -1,0 +1,5 @@
+Hero Section: A full-width section with a title, subtitle, and call-to-action button.
+Pricing Table: Shows three tiers of pricing with icons and feature lists.
+Contact Form: Includes name, email, message input, and submit button.
+About Section: A section with a title and paragraph of business history.
+Gallery: A grid of images with hover effects and optional captions.
