@@ -1,0 +1,256 @@
+{
+  "success": true,
+  "websiteName": "Cedar & Flame",
+  "industry": "restaurant",
+  "style": "modern",
+  "tags": [
+    "restaurant",
+    "modern",
+    "italian",
+    "wood-fired",
+    "natural wine",
+    "family-friendly"
+  ],
+  "components": [
+    {
+      "id": "header-cedar-flame",
+      "type": "Header",
+      "tags": [
+        "restaurant",
+        "general",
+        "navigation"
+      ],
+      "props": {
+        "logoText": "Cedar & Flame",
+        "navigation": [
+          {
+            "label": "Menu",
+            "href": "#menu"
+          },
+          {
+            "label": "Private Dining",
+            "href": "#private-dining"
+          },
+          {
+            "label": "Reservations",
+            "href": "#reservations"
+          }
+        ],
+        "cta": {
+          "label": "Book Now",
+          "href": "#reservations"
+        }
+      }
+    },
+    {
+      "id": "hero-cedar-flame",
+      "type": "Hero",
+      "tags": [
+        "restaurant",
+        "general",
+        "hero"
+      ],
+      "props": {
+        "title": "Cedar & Flame: Modern Italian, Wood-Fired",
+        "subtitle": "A family-friendly restaurant with a focus on seasonal ingredients and natural wines.",
+        "image": "https://picsum.photos/seed/cedar-flame-hero/1600/900",
+        "alt": "Wood-fired oven and rustic dining area at Cedar & Flame",
+        "primaryCta": {
+          "label": "View Our Menu",
+          "href": "#menu"
+        }
+      }
+    },
+    {
+      "id": "valuebadges-cedar-flame",
+      "type": "ValueBadges",
+      "tags": [
+        "restaurant",
+        "trust",
+        "general"
+      ],
+      "props": {
+        "heading": "What Sets Us Apart",
+        "items": [
+          {
+            "label": "Wood-Fired Cuisine",
+            "sub": "Our signature dishes are cooked in a traditional wood-fired oven."
+          },
+          {
+            "label": "Natural Wine List",
+            "sub": "We offer a curated selection of natural wines from local and international producers."
+          },
+          {
+            "label": "Family-Friendly Atmosphere",
+            "sub": "A warm and inviting space for the whole family to enjoy."
+          },
+          {
+            "label": "Seasonal Menu",
+            "sub": "Our menu changes with the seasons to highlight the freshest ingredients."
+          }
+        ]
+      }
+    },
+    {
+      "id": "splitfeature-cedar-flame-seasonal",
+      "type": "SplitFeature",
+      "tags": [
+        "restaurant",
+        "layout",
+        "general"
+      ],
+      "props": {
+        "heading": "Seasonal Menu",
+        "image": "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80",
+        "alt": "Seasonal dishes at Cedar & Flame",
+        "reverse": false,
+        "text": "Our menu changes seasonally to showcase the best local ingredients. We work closely with local farms to ensure the highest quality produce.  Expect dishes like wood-fired pizzas, handmade pasta, and seasonal vegetable sides."
+      }
+    },
+    {
+      "id": "dishgrid-cedar-flame-popular",
+      "type": "DishGrid",
+      "tags": [
+        "restaurant",
+        "menu",
+        "gallery"
+      ],
+      "props": {
+        "heading": "Popular Dishes",
+        "items": [
+          {
+            "title": "Wood-Fired Pizza",
+            "image": "https://picsum.photos/seed/pizza/400/300",
+            "alt": "Wood-fired pizza",
+            "price": "$18",
+            "desc": "San Marzano tomatoes, mozzarella, basil."
+          },
+          {
+            "title": "Handmade Tagliatelle",
+            "image": "https://picsum.photos/seed/pasta/400/300",
+            "alt": "Handmade tagliatelle pasta",
+            "price": "$22",
+            "desc": "With seasonal vegetables and parmesan cheese."
+          },
+          {
+            "title": "Grilled Octopus",
+            "image": "https://picsum.photos/seed/octopus/400/300",
+            "alt": "Grilled octopus dish",
+            "price": "$25",
+            "desc": "Tender octopus, roasted potatoes, lemon vinaigrette."
+          }
+        ]
+      }
+    },
+    {
+      "id": "splitfeature-cedar-flame-chef",
+      "type": "SplitFeature",
+      "tags": [
+        "restaurant",
+        "layout",
+        "general"
+      ],
+      "props": {
+        "heading": "Our Chef",
+        "image": "https://picsum.photos/seed/chef/400/300",
+        "alt": "Head chef at Cedar & Flame",
+        "reverse": true,
+        "text": "Our chef, [Chef's Name], has over 15 years of experience in Italian cuisine. Their passion for fresh, seasonal ingredients shines through in every dish."
+      }
+    },
+    {
+      "id": "testimonials-cedar-flame",
+      "type": "Testimonials",
+      "tags": [
+        "restaurant",
+        "reviews",
+        "social-proof"
+      ],
+      "props": {
+        "heading": "What Our Guests Are Saying",
+        "items": [
+          {
+            "quote": "The best pizza I've ever had! The atmosphere was also perfect for a family dinner.",
+            "author": "John S.",
+            "role": "Google Review",
+            "avatar": "https://picsum.photos/seed/guest1/128/128"
+          },
+          {
+            "quote": "Wonderful food, great service, and a lovely ambiance. We will definitely be back!",
+            "author": "Jane D.",
+            "role": "Yelp Review",
+            "avatar": "https://picsum.photos/seed/guest2/128/128"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gallery-cedar-flame",
+      "type": "Gallery",
+      "tags": [
+        "restaurant",
+        "portfolio",
+        "general"
+      ],
+      "props": {
+        "heading": "Gallery",
+        "images": [
+          {
+            "src": "https://picsum.photos/seed/gallery1/400/300",
+            "alt": "Restaurant interior"
+          },
+          {
+            "src": "https://picsum.photos/seed/gallery2/400/300",
+            "alt": "Dining area"
+          },
+          {
+            "src": "https://picsum.photos/seed/gallery3/400/300",
+            "alt": "Chef preparing food"
+          },
+          {
+            "src": "https://picsum.photos/seed/gallery4/400/300",
+            "alt": "Wood-fired oven"
+          },
+          {
+            "src": "https://picsum.photos/seed/gallery5/400/300",
+            "alt": "Plated dish"
+          },
+          {
+            "src": "https://picsum.photos/seed/gallery6/400/300",
+            "alt": "Happy guests"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bookingcta-cedar-flame",
+      "type": "BookingCTA",
+      "tags": [
+        "restaurant",
+        "cta",
+        "booking"
+      ],
+      "props": {
+        "heading": "Ready to Experience Cedar & Flame?",
+        "subheading": "Make your reservation today!",
+        "primary": {
+          "label": "Book a Table",
+          "href": "#reservations"
+        },
+        "secondary": {
+          "label": "View Menu",
+          "href": "#menu"
+        },
+        "background": "https://picsum.photos/seed/booking-cta/1600/400",
+        "alt": "Background image for booking CTA"
+      }
+    },
+    {
+      "id": "footer-cedar-flame",
+      "type": "Footer",
+      "tags": [],
+      "props": {}
+    }
+  ],
+  "error": null
+}
