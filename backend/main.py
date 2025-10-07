@@ -12,6 +12,7 @@ from rag.vectorstore import retrieve_by_roles_payload
 
 # 1) Load .env
 load_dotenv()
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY missing. Put it in backend/.env")
@@ -183,7 +184,296 @@ def sanitize_images_in_obj(obj):
     if isinstance(obj, list):
         return [sanitize_images_in_obj(x) for x in obj]
     return obj
+# Add this function right after the imports and before the main endpoint
+def get_flexible_industry_guidance(industry_lower: str) -> str:
+    """
+    Return flexible, non-restrictive industry guidance that encourages natural narrative flow
+    """
+    guidance_templates = {
+        "restaurant": """
+        RESTAURANT & FOOD INDUSTRY - Professional Website Guidance
+        
+        Overall Approach:
+        Create a compelling culinary journey that makes visitors hungry for the experience.
+        Focus on storytelling through food, ambiance, and service excellence.
+        
+        Key Narrative Elements to Consider Naturally:
+        • First Impressions: Strong visual identity showcasing restaurant atmosphere and cuisine style
+        • Credibility Building: Awards, chef credentials, press features, or unique selling points
+        • Culinary Experience: Menu highlights, special dishes, chef's philosophy, ingredient sourcing
+        • Visual Journey: Restaurant ambiance, food photography, behind-the-scenes moments
+        • Social Proof: Customer experiences, reviews, regular patron stories
+        • Practical Information: Location, hours, reservation process, contact details
+        • Conversion Opportunities: Multiple reservation points, special offers, event bookings
+        
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with atmosphere, building desire with food storytelling, 
+        establishing trust through social proof, and making conversion easy.
+        
+        Content Principles:
+        • Use sensory language that evokes taste, aroma, and dining experience
+        • Highlight what makes the restaurant unique (cuisine style, chef story, local sourcing)
+        • Include practical information naturally within the narrative flow
+        • Create multiple natural conversion opportunities
+        • Show, don't just tell - use high-quality food and ambiance photography
+        
+        Professional Standards:
+        • All imagery should be high-quality, professionally styled food and restaurant photography
+        • Copy should be specific to the actual cuisine and dining experience
+        • Maintain consistent tone that matches the restaurant's style (casual, fine dining, etc.)
+        • Ensure all practical information is clear and accessible
+        """,
 
+        "technology": """
+        TECHNOLOGY & SOFTWARE INDUSTRY - Professional Website Guidance
+
+        Overall Approach:
+        Build trust through clear value proposition, technical credibility, and proven results.
+
+        Key Narrative Elements to Consider Naturally:
+        • Problem & Solution: Clearly articulate the pain points and how your technology solves them
+        • Technical Depth: Show appropriate level of technical sophistication for the target audience
+        • Credibility Signals: Case studies, security certifications, customer logos, performance metrics
+        • Product Demonstration: Clear explanation of features, integrations, and user benefits
+        • Conversion Pathways: Free trials, demos, documentation access, pricing transparency
+
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with the core value proposition, demonstrating technical capabilities,
+        building trust through social proof, and providing clear next steps for evaluation.
+
+        Essential Components for Technology Websites:
+        • Clear value proposition and problem/solution framing
+        • Feature demonstrations with concrete benefits
+        • Technical specifications and capabilities
+        • Integration ecosystem and API documentation
+        • Security and compliance certifications
+        • Customer success stories and case studies
+        • Transparent pricing and trial options
+        • Developer resources and SDK availability
+
+        Content Principles:
+        • Focus on outcomes and benefits, not just features
+        • Use concrete metrics and performance data where possible
+        • Balance technical depth with accessibility for decision-makers
+        • Include specific integration examples and use cases
+        • Highlight security and reliability for enterprise buyers
+
+        Professional Standards:
+        • All technical claims should be verifiable and specific
+        • Include real customer examples and results
+        • Provide clear paths for both technical and business evaluation
+        • Maintain consistent technical accuracy throughout
+        • Ensure all conversion points are clear and accessible
+        """,
+        "fitness": """
+        FITNESS & WELLNESS INDUSTRY - Professional Website Guidance
+
+        Overall Approach:
+        Inspire transformation through community, expertise, and proven results.
+
+        Key Narrative Elements to Consider Naturally:
+        • Transformation Stories: Real member results and success journeys
+        • Expert Credibility: Certified trainers, professional facilities, proven methodologies
+        • Community Atmosphere: Supportive environment, group energy, social proof
+        • Comprehensive Offerings: Classes, personal training, nutrition, recovery services
+        • Accessible Entry Points: Free trials, introductory offers, flexible memberships
+
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with inspirational transformations, showcasing expert trainers and facilities,
+        demonstrating the variety of programs, highlighting community success, and making membership accessible.
+
+        Essential Components for Fitness Websites:
+        • Inspirational member transformations and results
+        • Professional trainer profiles with certifications
+        • Comprehensive class schedules and program offerings
+        • State-of-the-art facility and equipment showcase
+        • Nutrition and wellness service integration
+        • Transparent membership options and pricing
+        • Community testimonials and social proof
+        • Easy trial and onboarding processes
+
+        Content Principles:
+        • Focus on outcomes and lifestyle benefits, not just workouts
+        • Use real member stories and specific results
+        • Balance motivation with professional credibility
+        • Highlight the community and support system
+        • Make fitness accessible and non-intimidating
+
+        Professional Standards:
+        • All fitness claims should be realistic and achievable
+        • Include proper certifications and trainer qualifications
+        • Show real facilities and equipment (no stock photos if possible)
+        • Provide clear pricing without hidden fees
+        • Emphasize safety and proper technique
+        • Include appropriate disclaimers for health and fitness
+        """,
+
+        "beauty": """
+        BEAUTY & SPA INDUSTRY - Professional Website Guidance
+
+        Overall Approach:
+        Create an atmosphere of luxury, relaxation, and transformation that appeals to self-care and wellness.
+
+        Key Narrative Elements to Consider Naturally:
+        • Sensory Experience: Evoke feelings of relaxation, luxury, and transformation
+        • Expertise & Trust: Highlight professional credentials, certifications, and experience
+        • Results & Benefits: Showcase tangible outcomes and wellness benefits
+        • Luxury & Quality: Emphasize premium products, facilities, and experiences
+        • Accessibility: Make booking and information easily accessible
+
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with an inviting atmosphere, showcasing services and expertise,
+        building trust through results and testimonials, and making booking effortless.
+
+        Essential Components for Beauty & Spa Websites:
+        • Comprehensive service menus with clear pricing
+        • Professional team profiles with credentials
+        • Treatment results and transformations
+        • Luxury facility amenities
+        • Retail product offerings
+        • Special packages and promotions
+        • Client testimonials and reviews
+        • Easy booking and gift options
+
+        Content Principles:
+        • Use sensory language that evokes relaxation and luxury
+        • Focus on benefits and outcomes, not just services
+        • Highlight expertise and professional qualifications
+        • Include specific product brands and ingredients
+        • Show real results with before/after when appropriate
+
+        Professional Standards:
+        • Maintain a consistent luxury aesthetic throughout
+        • Use high-quality, professional photography
+        • Include clear pricing and service durations
+        • Highlight safety, hygiene, and professional standards
+        • Provide multiple booking and contact options
+
+        Visual & Tone Guidelines:
+        • Soft, calming color palettes
+        • Elegant, clean typography
+        • Professional before/after photography
+        • Luxury product imagery
+        • Serene spa environment shots
+        """,
+        "ecommerce": """
+        E-COMMERCE & RETAIL INDUSTRY - Professional Website Guidance
+
+        Overall Approach:
+        Create a compelling shopping experience that builds trust, showcases products effectively, and drives conversions.
+
+        Key Narrative Elements to Consider Naturally:
+        • Product Discovery: Easy navigation and product discovery through categories and search
+        • Visual Merchandising: High-quality product imagery and compelling presentation
+        • Trust Building: Customer reviews, security badges, return policies, shipping transparency
+        • Value Proposition: Clear pricing, promotions, and unique selling points
+        • Conversion Optimization: Streamlined checkout process and multiple payment options
+
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with hero promotions, showcasing featured products, building trust through social proof, 
+        providing essential shopping information, and making purchase decisions easy and secure.
+
+        Essential Components for E-commerce Websites:
+        • Clear product categorization and navigation
+        • High-quality product imagery with multiple angles
+        • Customer reviews and rating systems
+        • Transparent pricing and promotion displays
+        • Shipping and return policy information
+        • Security badges and trust signals
+        • Shopping cart and checkout process features
+        • Mobile-responsive product displays
+
+        Content Principles:
+        • Use compelling product descriptions with benefits and features
+        • Include social proof through reviews and ratings
+        • Be transparent about pricing, shipping costs, and policies
+        • Highlight promotions and limited-time offers clearly
+        • Provide detailed product information and specifications
+
+        Professional Standards:
+        • All product images should be high-quality and consistent
+        • Pricing information must be clear and transparent
+        • Shipping costs and delivery times should be prominently displayed
+        • Return policies and guarantees should be easy to find
+        • Security and payment trust badges should be visible
+        """,
+        "healthcare": """
+        HEALTHCARE & MEDICAL INDUSTRY - Professional Website Guidance
+
+        Overall Approach:
+        Build trust through compassion, expertise, and clear patient-focused communication.
+
+        Key Narrative Elements to Consider Naturally:
+        • Compassionate Introduction: Understanding patient concerns and healthcare needs
+        • Professional Credentials: Expertise, qualifications, and medical experience
+        • Service Clarity: Clear explanation of treatments, procedures, and approaches
+        • Patient Experience: What to expect, process transparency, and care philosophy
+        • Trust Building: Patient stories, success outcomes, facility quality, staff credentials
+        • Accessibility: Easy appointment scheduling, location information, insurance details
+
+        Natural Flow Ideas (not prescriptive):
+        Consider starting with compassionate understanding of patient needs, establishing medical credibility,
+        clearly explaining services and approach, building trust through patient experiences, and making
+        care accessible through clear next steps.
+
+        Essential Components for Healthcare Websites:
+        • Clear service offerings with medical accuracy
+        • Professional medical team profiles with credentials
+        • Easy appointment scheduling and contact information
+        • Insurance and payment options transparency
+        • Patient portal access and digital health tools
+        • Telehealth and virtual care availability
+        • Patient education and health resources
+        • Emergency and after-hours information
+
+        Content Principles:
+        • Use compassionate, reassuring, and professional language
+        • Highlight medical expertise and credentials naturally
+        • Maintain appropriate medical discretion and HIPAA compliance
+        • Focus on patient outcomes and quality of life improvements
+        • Include clear calls to action for appointments and information
+        • Balance medical accuracy with patient-friendly explanations
+
+        Professional Standards:
+        • All medical information should be accurate and evidence-based
+        • Include proper disclaimers for medical content
+        • Maintain patient privacy and confidentiality in all content
+        • Ensure accessibility for patients with different health literacy levels
+        • Provide clear emergency and urgent care instructions
+        • Include proper credentials and certifications
+
+        Compliance Considerations:
+        • Avoid making specific medical outcome guarantees
+        • Include appropriate medical disclaimers where needed
+        • Ensure all provider credentials are accurately represented
+        • Maintain HIPAA compliance in all patient-facing content
+        • Provide clear scope of practice information
+        """
+    }
+
+    # Default guidance for any industry
+    default_guidance = """
+    PROFESSIONAL BUSINESS WEBSITE - General Guidance
+    
+    Overall Approach:
+    Create a compelling narrative that builds trust and drives action.
+    
+    Key Narrative Elements:
+    • Strong value proposition and unique selling points
+    • Credibility building through expertise and social proof
+    • Clear explanation of products/services and benefits
+    • Multiple natural conversion opportunities
+    • Professional presentation and user experience
+    
+    Content Principles:
+    • Write specific, benefit-focused copy
+    • Use high-quality, relevant imagery
+    • Create logical information hierarchy
+    • Maintain consistent brand voice
+    • Ensure clear calls to action throughout
+    """
+
+    return guidance_templates.get(industry_lower, default_guidance)
 # 7) Main generation endpoint
 @app.post("/api/generate-website", response_model=GenerateResponse)
 def generate_website(payload: GenerateRequest):
@@ -209,7 +499,14 @@ def generate_website(payload: GenerateRequest):
             role_hints=role_hints,
             k=10,  # wider candidate pool per role to enable richer pages
         ) or {}
-
+        print(f"\n🎯 GENERATING FOR: {payload.business_name} ({payload.industry})")
+        print("📊 RETRIEVED COMPONENTS:")
+        templates = rag_payload.get("templates", [])
+        for i, template in enumerate(templates):
+            score = template.get('_score', 0)
+            role = template.get('_role', 'unknown')
+            print(f"  {i+1}. {template.get('type')} | Role: {role} | Score: {score:.3f}")
+            
         print("\n[DEBUG] Bucketed templates (first 1k chars):\n",
               json.dumps(rag_payload, ensure_ascii=False)[:1000], "...\n")
 
@@ -221,370 +518,8 @@ def generate_website(payload: GenerateRequest):
         allowed_types_union = " | ".join(f'"{t}"' for t in allowed_types) or '"Header" | "Hero" | "Footer"'
 
         # ---------- Industry-specific rules ----------
-        industry_rules = ""
         industry_lower = (payload.industry or "").lower()
-
-        if industry_lower in ["restaurant", "food", "restaurant & food"]:
-            industry_rules = """
-            Industry-specific requirements (Restaurant):
-            - Output 10–12 components in this rough order:
-              Header → Hero → AwardsBar/PressLogos → IntroSection → ValueBadges or Stats →
-              RestaurantMenu (2–4 categories, 3–6 items each) → DishGrid or SpecialsCarousel →
-              SplitFeature (e.g., 'Seasonal Menu'/'Private Dining') → ReservationForm or CTASection →
-              Gallery (6–9 images) → Testimonials/TestimonialHighlight → FAQ → Hours → LocationMap → Footer.
-            - Copy requirements:
-              • IntroSection.text: 60–120 words describing cuisine, ambience, and USP (no lorem).
-              • SplitFeature.text: 40–90 words specific to the feature (seasonal menu, chef story, sourcing).
-              • ValueBadges: 3–6 concise badges (e.g., 'Wood-Fired Oven', 'Gluten-Free Options').
-            - Images:
-              • Use only direct HTTPS image URLs (images.unsplash.com or picsum.photos). No unsplash.com/photo pages.
-              • Gallery must include ≥6 distinct photos with alt.
-            - Tags:
-              • Include "restaurant" on all restaurant-specific sections; add "general" where appropriate.
-            - Links:
-              • Use internal anchors consistently (#menu, #reservations).
-            """
-        elif industry_lower in ["technology", "software", "tech"]:
-            industry_rules = """
-                Industry-specific guidance (Technology/Software):
-
-                Goals:
-                - Produce a comprehensive, professional landing/marketing page with clear narrative flow.
-                - Showcase value, proof, technical depth, and conversion paths without enforcing any fixed order.
-
-                Composition (no strict order; arrange logically by story):
-                - Required coverage:
-                  • Header and Footer
-                  • ≥1 value/benefit section (FeatureGrid, Stats, Steps, ValueBadges)
-                  • ≥1 social proof section (Testimonials, CustomersLogos, SecurityBadges, ComplianceBadges, PressLogos)
-                  • ≥1 media/content section (Gallery, BlogList/News, Changelog, SystemStatus)
-                  • ≥1 core-content section that proves depth for technical buyers: APIEndpoints, InstallSteps, TutorialsList,
-                    IntegrationGrid, UseCaseShowcase, SDKDownload, APIDocs, ArchitectureDiagram
-                  • ≥1 conversion section (Pricing, DemoRequest, CTASection, Contact)
-
-                Recommended components to choose from (pick what fits; no need to use all):
-                  Header, Hero, FeatureGrid, Stats, Steps, UseCaseShowcase, CustomersLogos, SecurityBadges, ComplianceBadges,
-                  IntegrationGrid, APIEndpoints, SDKDownload, InstallSteps, TutorialsList, APIDocs, ArchitectureDiagram,
-                  Changelog, SystemStatus, Testimonials, Pricing, Team, BlogList, FAQ, CTASection, Contact, Footer.
-
-                Copy & tone:
-                - Hero headline ≤10 words; crisp and benefit-led.
-                - Keep copy concrete and buyer-focused (what it does, why it matters, proof).
-                - Name real technical artifacts (pipelines, runners, approvals, SDKs, OpenAPI, webhooks).
-                - Avoid fluff and lorem; keep sentences concise.
-
-                UX details:
-                - Use internal anchors consistently (e.g., #features, #docs, #pricing, #demo).
-                - CTA labels should be action-oriented (“Start free”, “Request a demo”, “View docs”).
-                - If Pricing is irrelevant, use a clear conversion alternative (DemoRequest or CTASection).
-
-                Imagery:
-                - Use only direct HTTPS URLs (images.unsplash.com or picsum.photos).
-                - Prefer tech-relevant visuals: dashboards, terminal/CLI, devices, code snippets, architecture diagrams.
-                - Provide descriptive alt text.
-
-                Data integrity:
-                - Use only component types and prop keys that exist in the RAG templates (respect propsSchema/mustHave).
-                - Prefer higher-scoring templates; do not repeat a type unless it adds new value.
-                """
-
-        elif industry_lower in ["healthcare", "medical"]:
-            industry_rules = """
-    Healthcare/Medical – guidance (no strict order):
-    - Coverage:
-      • Header & Footer
-      • ≥1 value section (ServicesGrid, Stats, ValueBadges, TreatmentProcess)
-      • ≥1 team/credibility section (DoctorCard/Team, CertificationsBadges, InsuranceAccepted)
-      • ≥1 media/content section (Gallery, BlogList/News, TelehealthInfo)
-      • ≥1 conversion (AppointmentScheduler, PatientPortalCTA, CTASection, Contact, LocationMap)
-      • Optional: ConditionsTreated for depth; EmergencyNotice for safety.
-    - Copy & tone:
-      • Compassionate, professional, plain language. Avoid guarantees or unverified health claims.
-      • Emphasize credentials, specialties, and access (same-day, telehealth).
-    - Compliance:
-      • Do not include medical advice; keep claims factual and generic.
-    - Imagery:
-      • Use HTTPS images with alt text. Prefer real clinic settings and friendly staff.
-    """
-        elif industry_lower in ["fitness", "wellness"]:
-            industry_rules = """
-    Fitness & Wellness – guidance (no strict order):
-    - Coverage (aim for 14–22 sections total across the page):
-      • Header & Footer
-      • ≥2 value sections (FacilityAmenities, SuccessMetrics/Stats, FeatureGrid, TreatmentProcess)
-      • ≥1 media section (EquipmentShowcase, Gallery, BlogList)
-      • ≥1 core-content schedule/program section (ClassSchedule, ProgramList, TrainerProfiles, NutritionPlan)
-      • ≥2 social-proof sections (BeforeAfter, ResultsTimeline, Testimonials)
-      • ≥2 conversion sections (MembershipPlans, TrialPassCTA, Pricing, CTASection, Contact, ReservationForm)
-    - Copy & tone:
-      • Motivational but realistic. No exaggerated health/weight-loss claims.
-      • Emphasize coaching quality, community, and safety.
-    - Imagery:
-      • Use HTTPS images; prefer real gym spaces, people training, or calm studio shots.
-    - Compliance:
-      • Avoid medical claims. Keep any nutrition guidance general.
-    """
-        elif industry_lower in ["beauty", "spa"]:
-            industry_rules = """
-    Beauty & Spa – guidance (no strict order):
-    - Aim for ~12–18 sections across the page:
-      • Header & Footer
-      • ≥2 service/value sections (ServiceMenu, SpaAmenities, SpecialPackages, FeatureGrid)
-      • ≥2 media sections (Gallery, ProductSpotlight)
-      • ≥2 social-proof sections (Testimonials, TestimonialHighlight)
-      • ≥2 conversion CTAs (GiftCardGrid, SpaCTA, Pricing, ReservationForm)
-    - Copy:
-      • Relaxing, luxurious, wellness-focused tone.
-      • Avoid exaggerated or medical claims.
-    - Imagery:
-      • HTTPS images only (Unsplash/Picsum).
-      • Spa interiors, treatments, products, calm lifestyle.
-    - Compliance:
-      • No medical promises, just wellness/relaxation benefits.
-    """
-        elif industry_lower in ["legal", "law firm"]:
-            industry_rules = """
-            Industry-specific requirements (Legal/Law Firm):
-            - Output 7–10 components in this order:
-              Header → Hero → PracticeAreas → AttorneyProfiles → CaseResults →
-              Testimonials → ConsultationForm → FAQ → Footer.
-            - Copy requirements:
-              • Use professional, authoritative language.
-              • Highlight experience, wins, and credentials.
-              • Avoid guaranteeing specific outcomes.
-            - Images:
-              • Use professional headshots for attorneys.
-              • Courtroom or office images should look authentic.
-            - Tags:
-              • Include "legal" or "law" tags where relevant.
-            - Compliance:
-              • Include required disclaimers if needed.
-            """
-        elif industry_lower in ["real estate"]:
-            industry_rules = """
-            Industry-specific requirements (Real Estate):
-            - Output 9–12 components in this order:
-              Header → Hero → SearchWidget → FeaturedListings → NeighborhoodGuide →
-              Testimonials → AgentProfiles → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight local market knowledge.
-              • Include clear contact methods.
-              • Show recent sales/transactions if available.
-            - Images:
-              • High-quality property photos are essential.
-              • Include neighborhood shots and amenities.
-            - Tags:
-              • Include "real-estate" tags where relevant.
-            """
-        elif industry_lower in ["education", "training"]:
-            industry_rules = """
-            Industry-specific requirements (Education/Training):
-            - Output 8–11 components in this order:
-              Header → Hero → ProgramOverview → Curriculum → InstructorProfiles →
-              Testimonials → Pricing → Schedule → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight learning outcomes and benefits.
-              • Include accreditation if applicable.
-              • Show success metrics (graduation rates, etc.).
-            - Images:
-              • Show learning environments and happy students.
-              • Include logos of accrediting bodies if relevant.
-            - Tags:
-              • Include "education" or "training" tags where relevant.
-            """
-        elif industry_lower in ["photography", "creative"]:
-            industry_rules = """
-            Industry-specific requirements (Photography/Creative):
-            - Output 7–9 components in this order:
-              Header → Hero → PortfolioGallery → Services → Pricing →
-              Testimonials → About → Contact → Footer.
-            - Copy requirements:
-              • Show artistic style and unique perspective.
-              • Include equipment/special techniques if relevant.
-            - Images:
-              • Portfolio images must be high-quality examples.
-              • Show your best work first.
-            - Tags:
-              • Include "photography" or "creative" tags where relevant.
-            """
-        elif industry_lower in ["business consulting"]:
-            industry_rules = """
-            Industry-specific requirements (Business Consulting):
-            - Output 7–10 components in this order:
-              Header → Hero → Services → CaseStudies → Testimonials →
-              Team → Contact → BlogList → Footer.
-            - Copy requirements:
-              • Highlight specific industries/expertise.
-              • Show measurable results for clients.
-              • Include credentials/certifications.
-            - Images:
-              • Professional headshots for consultants.
-              • Business/office environment images.
-            - Tags:
-              • Include "consulting" tags where relevant.
-            """
-        elif industry_lower in ["e-commerce", "retail"]:
-            industry_rules = """
-            Industry-specific requirements (E-commerce/Retail):
-            - Output 9–12 components in this order:
-              Header → Hero → ProductCategories → FeaturedProducts → Testimonials →
-              SpecialOffers → AboutBrand → ShippingInfo → FAQ → Footer.
-            - Copy requirements:
-              • Clear product descriptions with benefits.
-              • Highlight unique selling points.
-              • Include shipping/return policies.
-            - Images:
-              • High-quality product photos from multiple angles.
-              • Lifestyle images showing products in use.
-            - Tags:
-              • Include "ecommerce" or "retail" tags where relevant.
-            """
-        elif industry_lower in ["travel", "tourism"]:
-            industry_rules = """
-            Industry-specific requirements (Travel/Tourism):
-            - Output 8–11 components in this order:
-              Header → Hero → DestinationHighlights → Packages → Testimonials →
-              Gallery → BookingWidget → FAQ → Contact → Footer.
-            - Copy requirements:
-              • Create a sense of adventure and relaxation.
-              • Highlight unique experiences.
-              • Include practical travel information.
-            - Images:
-              • Stunning destination photos.
-              • Show happy travelers if possible.
-            - Tags:
-              • Include "travel" or "tourism" tags where relevant.
-            """
-        elif industry_lower in ["construction", "architecture"]:
-            industry_rules = """
-            Industry-specific requirements (Construction/Architecture):
-            - Output 8–11 components in this order:
-              Header → Hero → Services → ProjectPortfolio → ProcessSteps →
-              Testimonials → Team → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight expertise and past projects.
-              • Explain your process clearly.
-              • Include safety certifications if relevant.
-            - Images:
-              • High-quality project photos (before/after if possible).
-              • Show team in action.
-            - Tags:
-              • Include "construction" or "architecture" tags where relevant.
-            """
-        elif industry_lower in ["automotive", "transportation"]:
-            industry_rules = """
-            Industry-specific requirements (Automotive/Transportation):
-            - Output 8–11 components in this order:
-              Header → Hero → InventoryList → Services → Testimonials →
-              FinancingOptions → LocationMap → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight vehicle features and benefits.
-              • Include financing/special offers.
-              • Show service department capabilities.
-            - Images:
-              • High-quality vehicle photos.
-              • Show facility/service bay if relevant.
-            - Tags:
-              • Include "automotive" tags where relevant.
-            """
-        elif industry_lower in ["fashion", "apparel"]:
-            industry_rules = """
-            Industry-specific requirements (Fashion/Apparel):
-            - Output 8–10 components in this order:
-              Header → Hero → Lookbook → ProductGrid → AboutDesigner →
-              Testimonials → SizeGuide → Contact → Footer.
-            - Copy requirements:
-              • Highlight design philosophy and materials.
-              • Include sizing/fit information.
-              • Show styling suggestions.
-            - Images:
-              • Professional product shots on models.
-              • Detail shots of fabrics/construction.
-            - Tags:
-              • Include "fashion" tags where relevant.
-            """
-        elif industry_lower in ["finance", "banking"]:
-            industry_rules = """
-            Industry-specific requirements (Finance/Banking):
-            - Output 7–10 components in this order:
-              Header → Hero → Services → Rates → Testimonials →
-              Team → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Use trustworthy, professional language.
-              • Highlight security measures.
-              • Include clear rate information.
-            - Images:
-              • Professional headshots for advisors.
-              • Office/facility images.
-            - Tags:
-              • Include "finance" tags where relevant.
-            - Compliance:
-              • Include required financial disclaimers.
-            """
-        elif industry_lower in ["non-profit", "charity"]:
-            industry_rules = """
-            Industry-specific requirements (Non-profit/Charity):
-            - Output 8–11 components in this order:
-              Header → Hero → MissionStatement → Programs → ImpactStats →
-              DonationWidget → VolunteerForm → Events → FAQ → Footer.
-            - Copy requirements:
-              • Focus on mission and impact.
-              • Show transparency in fund usage.
-              • Include clear donation options.
-            - Images:
-              • Show beneficiaries and programs in action.
-              • Avoid overly sad imagery; focus on hope.
-            - Tags:
-              • Include "nonprofit" tags where relevant.
-            """
-        elif industry_lower in ["event planning"]:
-            industry_rules = """
-            Industry-specific requirements (Event Planning):
-            - Output 8–11 components in this order:
-              Header → Hero → Services → Portfolio → Testimonials →
-              Process → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight past successful events.
-              • Explain your planning process.
-              • Include vendor relationships if relevant.
-            - Images:
-              • Show beautifully executed events.
-              • Include diverse event types if applicable.
-            - Tags:
-              • Include "events" tags where relevant.
-            """
-        elif industry_lower in ["interior design"]:
-            industry_rules = """
-            Industry-specific requirements (Interior Design):
-            - Output 8–10 components in this order:
-              Header → Hero → Portfolio → Services → Process →
-              Testimonials → Contact → FAQ → Footer.
-            - Copy requirements:
-              • Highlight design style and philosophy.
-              • Show before/after when possible.
-              • Include product sourcing if relevant.
-            - Images:
-              • High-quality portfolio shots.
-              • Show different styles if versatile.
-            - Tags:
-              • Include "design" tags where relevant.
-            """
-        elif industry_lower in ["marketing", "advertising"]:
-            industry_rules = """
-            Industry-specific requirements (Marketing/Advertising):
-            - Output 8–11 components in this order:
-              Header → Hero → Services → CaseStudies → Testimonials →
-              Team → Blog → Contact → Footer.
-            - Copy requirements:
-              • Highlight measurable results for clients.
-              • Show creative approach.
-              • Include client industries served.
-            - Images:
-              • Show campaigns/work samples.
-              • Professional team photos.
-            - Tags:
-              • Include "marketing" tags where relevant.
-            """
+        industry_guidance = get_flexible_industry_guidance(industry_lower)
 
         # JSON schema for the model (expanded types)
         JSON_SCHEMA_TS = f"""
@@ -611,50 +546,84 @@ def generate_website(payload: GenerateRequest):
             "Strictly use component props keys that exist in the provided propsSchema; do not invent keys. "
             "Write specific, production-ready copy; no lorem ipsum."
         )
+
         user_msg = f"""
-        RAG payload (templates, image_keywords, schema_defaults):
+        RAG CONTEXT & COMPONENT LIBRARY:
         {json.dumps(rag_payload, ensure_ascii=False)}
 
-        User input:
-        - business_name: {payload.business_name}
-        - industry: {payload.industry}
-        - style: {payload.style}
-        - description: {payload.description}
-        - target_audience: {payload.target_audience or 'N/A'}
-        - business_goals: {payload.business_goals or 'N/A'}
-        - unique_selling_points: {payload.unique_selling_points or 'N/A'}
-        
-        Policy:
-        - Allowed component types come from the RAG templates: {", ".join(allowed_types)}.
-        - For every component you output, props MUST stick to that component's propsSchema (see templates[*].propsSchemaKeys).
-        - When a prop is missing but has a default in schema_defaults, fill it sensibly. Do not add new keys.
-        - Prefer templates with higher templates[*]._score and avoid duplicate types unless they add new value (secondary CTA later is OK).
-        - No fixed order; arrange sections logically for a compelling narrative.
-        
-        Quality targets:
-        - Output a full, professional page with ~14–22 components (use fewer only if the story is already complete).
-        - Must include Header and Footer (if allowed).
-        - Aim for breadth and depth:
-            • ≥2 conversion sections (e.g., Pricing, ReservationForm/Contact, CTASection, BookingCTA, DemoRequest)
-            • ≥2 social-proof sections (e.g., Testimonials, TestimonialHighlight, AwardsBar, PressLogos)
-            • ≥2 media/content sections (e.g., Gallery with 9–12 images, BlogList/News, ProductCarousel/Changelog)
-            • ≥1–3 core-content sections relevant to the industry (e.g., RestaurantMenu; IntegrationGrid/APIDocs/APIEndpoints for software)
-        - Navigation must be coherent: if you output internal links, those anchors should exist (#features, #menu, #pricing, #gallery, #docs, #contact).
-        - Copy should be specific to the business; keep it concise and benefit-led; avoid generic claims.
-        
-        Images:
-        - Use only HTTPS URLs with descriptive alt text.
-        - Choose visuals aligned with these keywords:
-        {", ".join((rag_payload.get("image_keywords") or []))}
-        Industry amplification (optional if matched):
-        {(industry_rules or "N/A").strip()}
+        BUSINESS REQUIREMENTS:
+        - Business Name: {payload.business_name}
+        - Industry: {payload.industry}
+        - Design Style: {payload.style}
+        - Business Description: {payload.description}
+        - Target Audience: {payload.target_audience or 'General audience'}
+        - Business Goals: {payload.business_goals or 'Increase visibility and engagement'}
+        - Unique Selling Points: {payload.unique_selling_points or 'Quality and service excellence'}
 
+        COMPONENT CONSTRAINTS:
+        - Allowed component types: {", ".join(allowed_types)}
+        - For each component, props MUST follow the provided propsSchema
+        - Use schema_defaults as guidance for expected data structure
+        - Prefer higher-scoring templates from RAG results
 
+        PROFESSIONAL WEBSITE STANDARDS:
 
-        Output:
-        Return ONLY JSON matching this TypeScript type:
+        COMPREHENSIVE COVERAGE:
+        Create a complete, professional website with natural narrative flow. Include:
+        • Strong opening that establishes brand identity and value
+        • Multiple sections that build credibility and trust
+        • Rich content that showcases products/services naturally
+        • Social proof and validation elements
+        • Clear conversion pathways
+        • Professional footer with essential information
+
+        NATURAL NARRATIVE FLOW:
+        Arrange components in a logical, compelling sequence that tells a story. Consider:
+        1. Introduction & Value Proposition
+        2. Credibility & Trust Building  
+        3. Product/Service Showcase
+        4. Social Proof & Validation
+        5. Conversion & Action
+        6. Practical Information
+
+        CONTENT QUALITY:
+        • Write specific, production-ready copy tailored to the business
+        • Avoid generic placeholder text - be concrete and descriptive
+        • Use appropriate tone for the industry and audience
+        • Create compelling headlines and benefit-focused descriptions
+        • Ensure all copy serves a purpose in the overall narrative
+
+        IMAGERY & VISUALS:
+        • Use high-quality, contextually appropriate images
+        • Generate images using these keyword themes: {", ".join((rag_payload.get("image_keywords") or []))}
+        • All images must be HTTPS URLs from approved sources
+        • Include descriptive alt text for accessibility
+        • Ensure visual consistency throughout
+
+        INDUSTRY-SPECIFIC GUIDANCE:
+        {industry_guidance}
+
+        NAVIGATION & UX:
+        • Create coherent internal navigation with logical anchor links
+        • Include multiple conversion opportunities throughout the page
+        • Ensure mobile-friendly component arrangement
+        • Maintain consistent styling and spacing
+
+        TECHNICAL REQUIREMENTS:
+        • Output must be valid JSON matching the specified schema
+        • All component types must exist in allowed_types list
+        • All props must conform to their component's propsSchema
+        • Include appropriate tags for categorization
+        • Ensure all required fields (mustHave) are populated
+
+        OUTPUT STRUCTURE:
+        Generate a complete website with 12-20 components that tells a compelling story and drives action. 
+        The arrangement should feel natural and professional, not forced or template-driven.
+
+        Return ONLY valid JSON matching this schema:
         {JSON_SCHEMA_TS}
         """
+
         try:
             model = make_model(system_msg)
             resp = model.generate_content(
@@ -680,7 +649,7 @@ def generate_website(payload: GenerateRequest):
                 },
             )
 
-            # Parse model output
+        # Parse model output
         try:
             raw_text = resp.text or "{}"
             try:
@@ -692,7 +661,7 @@ def generate_website(payload: GenerateRequest):
         except Exception as e:
             raise HTTPException(status_code=502, detail=f"Invalid JSON from model: {str(e)}")
 
-            # ---- Auto-sanitize all image-like fields ----
+        # ---- Auto-sanitize all image-like fields ----
         data = sanitize_images_in_obj(data)
 
         # Defaults
@@ -712,7 +681,6 @@ def generate_website(payload: GenerateRequest):
         raise
     except Exception as e:
         return GenerateResponse(success=False, error=str(e))
-
 
 # Page role ordering used throughout
 ORDER = ["header","hero","value","media","social-proof","conversion","core-content","footer","aux"]
@@ -776,15 +744,25 @@ def _gather_image_keywords(components: list[dict], industry: str = "") -> list[s
     kws = []
     for c in components or []:
         kws.extend(c.get("imageKeywords") or [])
+        # Also extract keywords from component content
+        if c.get('props'):
+            # Look for text fields that might contain relevant keywords
+            text_fields = ['title', 'heading', 'description', 'text', 'name']
+            for field in text_fields:
+                if field in c['props'] and c['props'][field]:
+                    words = re.findall(r'\b[a-z]{3,15}\b', c['props'][field].lower())
+                    kws.extend(words[:2])  # Add a couple of content keywords
 
-    # Add industry-specific keywords
+    # Enhanced industry-specific keywords
     industry_enhancements = {
-        "restaurant": ["food", "restaurant", "cuisine", "chef", "dining"],
-        "technology": ["technology", "software", "computer", "code", "digital"],
-        "healthcare": ["healthcare", "medical", "doctor", "hospital", "wellness"],
-        "beauty": ["beauty", "spa", "skincare", "relaxation", "wellness"],
-        "fitness": ["fitness", "gym", "workout", "health", "exercise"],
-        # Add more industry mappings
+        "restaurant": ["restaurant", "food", "cuisine", "chef", "dining", "meal", "culinary", "gourmet"],
+        "technology": ["technology", "software", "computer", "code", "digital", "innovation", "tech", "data"],
+        "healthcare": ["healthcare", "medical", "doctor", "hospital", "wellness", "health", "care", "clinic"],
+        "beauty": ["beauty", "spa", "skincare", "relaxation", "wellness", "treatment", "salon", "cosmetic"],
+        "fitness": ["fitness", "gym", "workout", "health", "exercise", "training", "sports", "active"],
+        "ecommerce": ["shopping", "retail", "products", "online", "store", "buy", "purchase", "delivery"],
+        "education": ["education", "learning", "school", "students", "knowledge", "study", "academic"],
+        "real estate": ["real estate", "property", "home", "house", "architecture", "interior", "design"],
     }
 
     if industry.lower() in industry_enhancements:
@@ -795,10 +773,10 @@ def _gather_image_keywords(components: list[dict], industry: str = "") -> list[s
     seen = set()
     for w in kws:
         key = str(w).strip().lower()
-        if key and key not in seen:
+        if key and key not in seen and len(key) > 2:  # Filter out very short words
             out.append(str(w).strip())
             seen.add(key)
-    return out[:24]  # cap a bit
+    return out[:20]  # Slightly more compact cap
 def _role_of(comp: dict) -> str:
     # prefer explicit pageRole, else infer by type
     return (comp.get("pageRole")

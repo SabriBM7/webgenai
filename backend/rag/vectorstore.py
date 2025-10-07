@@ -11,6 +11,72 @@ from functools import lru_cache
 import hashlib
 import requests
 
+
+UNSPLASH_ACCESS_KEY = os.getenv("UNSPLASH_ACCESS_KEY")
+UNSPLASH_API_URL = "https://api.unsplash.com"
+
+
+def _get_unsplash_headers():
+    """Get headers for Unsplash API if access key is available"""
+    if UNSPLASH_ACCESS_KEY:
+        return {"Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}"}
+    return {}
+
+
+def _generate_unsplash_image_url_enhanced(
+        keywords: List[str],
+        width: int = 1600,
+        height: int = 1200,
+        use_api: bool = False
+) -> str:
+    """
+    Generate Unsplash image URL with optional API support for better results
+    """
+    if not keywords:
+        return f"https://picsum.photos/{width}/{height}"
+
+    query = ",".join(keywords[:3])
+    seed = random.randint(1, 1000)
+
+    if use_api and UNSPLASH_ACCESS_KEY:
+        # Use official API for better results
+        try:
+            params = {
+                "query": query,
+                "orientation": "landscape",
+                "per_page": 1
+            }
+            response = requests.get(
+                f"{UNSPLASH_API_URL}/photos/random",
+                params=params,
+                headers=_get_unsplash_headers(),
+                timeout=5
+            )
+            if response.status_code == 200:
+                data = response.json()
+                # Return specific image URL with size parameters
+                return f"{data['urls']['raw']}&w={width}&h={height}&fit=crop"
+        except Exception:
+            # Fall back to public endpoint if API fails
+            pass
+
+    # Fallback to public Unsplash source
+    return f"https://source.unsplash.com/featured/{width}x{height}/?{query}&sig={seed}"
+
+
+def _generate_picsum_image_url(
+        width: int = 1600,
+        height: int = 1200,
+        grayscale: bool = False
+) -> str:
+    """
+    Generate Picsum image URL with optional grayscale
+    """
+    base_url = f"https://picsum.photos/{width}/{height}"
+    if grayscale:
+        return f"{base_url}?grayscale"
+    return base_url
+
 def _sig(*parts) -> str:
     raw = "||".join(str(p) for p in parts)
     return hashlib.md5(raw.encode("utf-8")).hexdigest()
@@ -375,6 +441,244 @@ def _trim_view(e: Dict[str, Any]) -> Dict[str, Any]:
         "imageKeywords": e.get("imageKeywords", []),
         "pageRole": e.get("pageRole", "aux"),
     }
+# Add this enhanced image generation function to vectorstore.py
+
+def _generate_contextual_image_url(
+        component_type: str,
+        industry: str,
+        content_context: dict,
+        keywords: List[str] = None,
+        width: int = 1600,
+        height: int = 1200,
+        prefer_unsplash: bool = True
+) -> str:
+    """
+    Generate highly contextual image URLs with enhanced fallback logic
+    """
+    # Component-specific image mappings
+    component_image_map = {
+        "Hero": {
+            "restaurant": ["restaurant interior", "fine dining", "chef cooking", "food presentation"],
+            "technology": ["tech office", "software development", "digital innovation", "coding"],
+            "healthcare": ["medical clinic", "doctor patient", "hospital", "wellness", "healthcare"],
+            "fitness": ["gym workout", "fitness training", "healthy lifestyle", "exercise", "workout"],
+            "beauty": ["spa relaxation", "spa interior", "beauty salon", "beauty treatment", "relaxation", "skincare", "wellness"],
+            "ecommerce": ["online shopping", "retail", "packages", "ecommerce store", "delivery", "shopping"],
+
+        },
+        "ServiceMenu": {
+            "beauty": ["spa treatments", "beauty services", "massage", "facials"]
+        },
+        "ProductGrid": {
+            "ecommerce": ["product showcase", "retail items", "shopping products", "ecommerce"]
+        },
+        "CategoryShowcase": {
+            "ecommerce": ["shopping categories", "product departments", "retail sections", "browsing"]
+        },
+        "ProductCarousel": {
+            "ecommerce": ["featured products", "trending items", "shopping carousel", "promotions"]
+        },
+        "ReviewShowcase": {
+            "ecommerce": ["customer reviews", "product ratings", "shopping feedback", "testimonials"]
+        },
+        "ShippingInfo": {
+            "ecommerce": ["shipping delivery", "package logistics", "delivery service", "shipping"]
+        },
+        "FlashSale": {
+            "ecommerce": ["sale promotion", "discount offer", "limited time", "shopping sale"]
+        },
+        "BundleDeal": {
+            "ecommerce": ["product bundle", "package deal", "shopping savings", "combination"]
+        },
+        "SpaAmenities": {
+            "beauty": ["spa facilities", "luxury amenities", "relaxation areas", "wellness"]
+        },
+        "ProductSpotlight": {
+            "beauty": ["beauty products", "skincare", "cosmetics", "retail"]
+        },
+        "SpecialPackages": {
+            "beauty": ["spa packages", "treatment bundles", "special offers", "luxury"]
+        },
+        "BeforeAfter": {
+            "beauty": ["before after", "results", "transformations", "improvement", "fitness transformation", "progress"]
+        },
+        "TherapistProfiles": {
+            "beauty": ["beauty experts", "spa therapists", "estheticians", "professionals"]
+        },
+        "WellnessBlog": {
+            "beauty": ["wellness tips", "beauty education", "self-care", "health"]
+        },
+        "SpaCTA": {
+            "beauty": ["spa booking", "appointment", "relaxation", "reservation"]
+        },
+        "TestimonialCarousel": {
+            "beauty": ["client testimonials", "reviews", "satisfaction", "happy clients"]
+        },
+        "BrandPartners": {
+            "beauty": ["beauty brands", "product lines", "luxury cosmetics", "partners"]
+        },
+        "ClassSchedule": {
+            "fitness": ["fitness class", "group workout", "gym timetable", "exercise schedule"]
+        },
+        "TrainerProfiles": {
+            "fitness": ["fitness trainer", "personal coach", "instructor", "professional"]
+        },
+        "MembershipPlans": {
+            "fitness": ["gym membership", "fitness plans", "pricing", "subscription"]
+        },
+        "FacilityAmenities": {
+            "fitness": ["gym equipment", "fitness facilities", "amenities", "workout space"]
+        },
+        "NutritionPlan": {
+            "fitness": ["healthy nutrition", "meal prep", "diet plan", "food"]
+        },
+        "WellnessServices": {
+            "fitness": ["wellness", "recovery", "massage", "health treatments"]
+        },
+        "ProgramList": {
+            "fitness": ["fitness program", "challenge", "training course", "workout plan"]
+        },
+        "ResultsTimeline": {
+            "fitness": ["progress timeline", "achievements", "milestones", "fitness journey"]
+        },
+        "TrialPass": {
+            "fitness": ["free trial", "gym pass", "intro offer", "membership trial"]
+        },
+        "CommunitySpotlight": {
+            "fitness": ["fitness community", "member spotlight", "group", "social"]
+        },
+        "EquipmentShowcase": {
+            "fitness": ["gym equipment", "fitness machines", "training tools", "exercise gear"]
+        },
+        "ServicesGrid": {
+            "healthcare": ["medical services", "healthcare treatments", "doctor consultation", "medical care"]
+        },
+        "DoctorCard": {
+            "healthcare": ["doctor portrait", "medical professional", "physician", "healthcare provider"]
+        },
+        "AppointmentScheduler": {
+            "healthcare": ["medical appointment", "healthcare scheduling", "doctor booking", "calendar"]
+        },
+        "InsuranceAccepted": {
+            "healthcare": ["insurance providers", "medical coverage", "health insurance", "payment options"]
+        },
+        "PatientPortal": {
+            "healthcare": ["patient portal", "medical records", "digital health", "online access"]
+        },
+        "TelehealthInfo": {
+            "healthcare": ["telehealth", "virtual visit", "remote care", "video consultation"]
+        },
+        "ConditionsTreated": {
+            "healthcare": ["medical conditions", "health treatments", "patient care", "medical"]
+        },
+        "TestimonialsHealth": {
+            "healthcare": ["patient testimonials", "healthcare reviews", "medical stories", "patient care"]
+        },
+        "HealthBlog": {
+            "healthcare": ["health blog", "medical articles", "wellness tips", "health education"]
+        },
+        "Certifications": {
+            "healthcare": ["medical certifications", "accreditations", "credentials", "healthcare standards"]
+        },
+        "PreventiveCare": {
+            "healthcare": ["preventive care", "health screening", "wellness", "medical prevention"]
+        },
+        "FeatureGrid": {
+            "technology": ["software features", "dashboard interface", "technology benefits", "ui components"]
+        },
+        "IntegrationGrid": {
+            "technology": ["software integrations", "partner logos", "ecosystem", "api connections"]
+        },
+        "APIDocs": {
+            "technology": ["code documentation", "developer tools", "api reference", "programming"]
+        },
+        "SDKDownload": {
+            "technology": ["software development", "code libraries", "programming", "download"]
+        },
+        "UseCaseShowcase": {
+            "technology": ["business solutions", "industry applications", "use cases", "enterprise"]
+        },
+        "SecurityBadges": {
+            "technology": ["security certificates", "compliance badges", "trust symbols", "encryption"]
+        },
+        "DemoRequest": {
+            "technology": ["product demo", "software tour", "sales presentation", "demonstration"]
+        },
+        "CustomerLogos": {
+            "technology": ["company logos", "enterprise clients", "brand partners", "customers"]
+        },
+        "Gallery": {
+            "restaurant": ["restaurant dishes", "food photography", "chef preparation", "dining experience"],
+            "technology": ["software interface", "team collaboration", "tech products", "data visualization"],
+            "healthcare": ["medical equipment", "healthcare team", "patient care", "clinic facilities"],
+            "fitness": ["gym equipment", "fitness classes", "personal training", "workout results"],
+            "beauty": ["beauty products", "spa treatments", "salon services", "before after"],
+            "ecommerce": ["product showcase", "customer reviews", "shopping experience", "brand products"]
+        },
+        "DishGrid": {
+            "restaurant": ["gourmet food", "plated dishes", "culinary arts", "restaurant cuisine"]
+        },
+        "RestaurantMenu": {
+            "restaurant": ["menu items", "food presentation", "restaurant dishes", "culinary"]
+        },
+        "ChefBio": {
+            "restaurant": ["professional chef", "kitchen portrait", "cooking demonstration", "culinary expert"]
+        },
+        "Team": {
+            "default": ["professional team", "workplace collaboration", "expert staff", "company culture"]
+        },
+        "Testimonials": {
+            "default": ["happy customer", "client satisfaction", "user experience", "customer review"]
+        }
+    }
+
+    # Initialize effective_keywords as an empty list
+    effective_keywords = []
+
+    # 1. Try component-specific keywords
+    if component_type in component_image_map:
+        if industry.lower() in component_image_map[component_type]:
+            effective_keywords.extend(component_image_map[component_type][industry.lower()])
+        elif "default" in component_image_map[component_type]:
+            effective_keywords.extend(component_image_map[component_type]["default"])
+
+    # 2. Add provided keywords
+    if keywords:
+        effective_keywords.extend(keywords[:2])
+
+    # 3. Add industry fallback if still no keywords
+    if not effective_keywords:
+        industry_fallbacks = {
+            "restaurant": ["restaurant", "food", "cuisine", "dining"],
+            "technology": ["technology", "software", "innovation", "digital"],
+            "healthcare": ["healthcare", "medical", "wellness", "clinic"],
+            "fitness": ["fitness", "gym", "workout", "health"],
+            "beauty": ["beauty", "spa", "wellness", "skincare"],
+            "ecommerce": ["ecommerce", "shopping", "retail", "online"]
+        }
+        effective_keywords.extend(industry_fallbacks.get(industry.lower(), ["business", "professional"]))
+
+    # 4. Add component type as final fallback
+    if not effective_keywords:
+        effective_keywords.append(component_type.lower())
+
+    # Remove duplicates and take top 3
+    seen = set()
+    unique_keywords = []
+    for kw in effective_keywords:
+        if kw not in seen:
+            unique_keywords.append(kw)
+            seen.add(kw)
+
+    final_keywords = unique_keywords[:3]
+
+    if prefer_unsplash and final_keywords:
+        return _generate_unsplash_image_url_enhanced(
+            final_keywords, width, height, use_api=bool(UNSPLASH_ACCESS_KEY)
+        )
+    else:
+        # Fallback to Picsum
+        return _generate_picsum_image_url(width, height)
 def _generate_unsplash_image_url(keywords: List[str], width: int = 1600, height: int = 1200) -> str:
     """
     Generate a dynamic Unsplash image URL based on keywords
@@ -391,67 +695,45 @@ def _generate_unsplash_image_url(keywords: List[str], width: int = 1600, height:
     # Use Unsplash source URL
     return f"https://source.unsplash.com/featured/{width}x{height}/?{query}&sig={random_seed}"
 
-def _replace_static_images_with_dynamic_inplace(component: Dict[str, Any], industry: str, image_keywords: List[str]) -> None:
+
+def _replace_static_images_with_dynamic_inplace(component: Dict[str, Any], industry: str,
+                                                image_keywords: List[str]) -> None:
     """
-    Replace static image URLs with dynamically generated ones based on industry (in-place)
+    Replace static image URLs with dynamically generated ones based on component context
     """
     if not component or not isinstance(component, dict):
         return
 
-    # Industry-specific default keywords
-    industry_keywords_map = {
-        "restaurant": ["food", "restaurant", "cuisine", "dining", "chef", "meal"],
-        "technology": ["technology", "software", "computer", "digital", "code", "laptop"],
-        "healthcare": ["healthcare", "medical", "hospital", "wellness", "doctor", "nurse"],
-        "beauty": ["beauty", "spa", "skincare", "wellness", "relaxation", "salon"],
-        "fitness": ["fitness", "gym", "workout", "health", "exercise", "training"],
-        "legal": ["legal", "law", "court", "justice", "lawyer", "attorney"],
-        "real estate": ["real estate", "property", "home", "house", "architecture", "interior"],
-        "education": ["education", "school", "learning", "classroom", "students", "books"],
-        "photography": ["photography", "camera", "photo", "art", "creative", "portrait"],
-        "business consulting": ["business", "consulting", "office", "meeting", "strategy", "analysis"],
-        "e-commerce": ["ecommerce", "shopping", "online", "retail", "products", "packages"],
-        "travel": ["travel", "tourism", "vacation", "destination", "adventure", "landscape"],
-        "construction": ["construction", "architecture", "building", "design", "blueprint", "tools"],
-        "automotive": ["automotive", "car", "vehicle", "transportation", "mechanic", "engineering"],
-        "fashion": ["fashion", "clothing", "style", "apparel", "model", "design"],
-        "finance": ["finance", "banking", "money", "investment", "economy", "business"],
-        "non-profit": ["nonprofit", "charity", "community", "help", "volunteer", "donation"],
-        "event planning": ["events", "planning", "celebration", "party", "wedding", "conference"],
-        "interior design": ["interior", "design", "home", "decor", "furniture", "architecture"],
-        "marketing": ["marketing", "advertising", "brand", "digital", "social media", "campaign"]
-    }
+    component_type = component.get("type", "")
 
-    # Use provided keywords or fallback to industry-specific ones
-    effective_keywords = image_keywords if image_keywords else []
-    if not effective_keywords and industry:
-        effective_keywords = industry_keywords_map.get(industry.lower(), [industry])
-
-    # If still no keywords, use a default
-    if not effective_keywords:
-        effective_keywords = ["business", "professional", "office"]
-
-    def replace_image_urls(obj):
+    def replace_image_urls(obj, current_path=""):
         if isinstance(obj, dict):
             for key, value in obj.items():
                 key_lower = key.lower()
                 # Check if this is an image field
                 is_image_field = (
                         "image" in key_lower or
-                        key_lower in {"src", "icon", "avatar", "logo", "background", "photo", "thumbnail"}
+                        key_lower in {"src", "icon", "avatar", "thumbnail", "logo", "background", "photo"}
                 )
 
-                if isinstance(value, str) and is_image_field:
-                    if value.startswith(("http://", "https://")):
-                        # Replace with dynamic image
-                        obj[key] = _generate_unsplash_image_url(effective_keywords)
+                if isinstance(value, str) and is_image_field and value.startswith(("http://", "https://")):
+                    # Generate contextual image based on component type and industry
+                    contextual_image = _generate_contextual_image_url(
+                        component_type=component_type,
+                        industry=industry,
+                        content_context=component,
+                        keywords=image_keywords
+                    )
+                    obj[key] = contextual_image
                 elif isinstance(value, (dict, list)):
-                    replace_image_urls(value)
+                    replace_image_urls(value, f"{current_path}.{key}" if current_path else key)
         elif isinstance(obj, list):
-            for item in obj:
-                replace_image_urls(item)
+            for i, item in enumerate(obj):
+                if isinstance(item, (dict, list)):
+                    replace_image_urls(item, f"{current_path}[{i}]" if current_path else f"[{i}]")
 
     replace_image_urls(component)
+
 def retrieve_bucketed_context(
         *,
         q_terms: List[str],
@@ -789,7 +1071,37 @@ def search_entries_composite(
         results.append(obj)
     return results
 
+def debug_retrieval(query_terms, industry, role_hints=None, k=10):
+    """
+    Debug which components are being retrieved and their scores
+    """
+    _ensure()
 
+    role_hints = role_hints or ORDER_ROLES
+    print(f"\n🔍 [RAG DEBUG] Query: {query_terms}, Industry: {industry}")
+    print("=" * 60)
+
+    for role in role_hints:
+        candidates = search_entries_composite(
+            q_terms=query_terms,
+            role=role,
+            industry=industry,
+            need_images=True,
+            k=k,
+            use_mmr=True,
+        )
+
+        if candidates:
+            print(f"\n📁 Role: {role.upper()} (found {len(candidates)})")
+            for i, candidate in enumerate(candidates[:3]):  # Show top 3 per role
+                score = candidate.get('_score', 0)
+                comp_type = candidate.get('type', 'Unknown')
+                desc = candidate.get('description', '')[:80] + "..."
+                tags = candidate.get('tags', [])[:3]
+
+                print(f"  {i+1}. {comp_type} (score: {score:.3f})")
+                print(f"     Tags: {tags}")
+                print(f"     Desc: {desc}")
 def retrieve_by_roles(
         q_terms: List[str],
         roles: List[str],
